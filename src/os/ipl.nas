@@ -33,22 +33,21 @@ entry:
     MOV		DS,AX
 
 ; 读盘初始化
-    MOV     AX,0x0820
+    MOV     AX,0x0820       ; 软盘被读取到内存中的起始地址
     MOV		ES,AX
     MOV     CH,0            ; 柱面0
     MOV     DH,0            ; 磁头号
     MOV     CL,2            ; 扇区号
-
 readloop:
     MOV     SI,0            ; 记录读盘错误次数
 ; 读盘
 retry:
-    MOV     AH,0x02         ; 读入磁盘
-    MOV     AL,1            ; 处理对象的扇区数 1个扇区
+    MOV     AH,0x02         
+    MOV     AL,1            ; 处理对象的扇区数
     MOV     BX,0            ; 缓冲地址
     MOV     DL,0x00         ; 驱动器号
     INT     0x13            ; 调用bios磁盘函数
-    JNC     fin
+    JNC     next            ; 读取下一个磁盘扇区
     ADD     SI,1
     CMP     SI,5            ; 重试5次
     JAE     error
@@ -56,6 +55,14 @@ retry:
     MOV     DL,0x00
     INT     0x13
     JMP     retry
+
+next:
+    MOV     AX,ES           ; 内存地址后移0x0020
+    ADD     AX,0x0020
+    MOV     ES,AX
+    ADD     CL,1
+    CMP     CL, 18          ; 只读到第18个扇区
+    JBE     readloop
 
 fin:
     HLT						; 停止cpu 直到有事件发生
