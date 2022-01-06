@@ -1,6 +1,8 @@
 ; ffos
 ; TAB=4
 
+CYLS EQU 10         ; 柱面数量
+
     ORG		0x7c00          ; 程序加载地址
 
 ; FAT12格式 软盘
@@ -55,14 +57,20 @@ retry:
     MOV     DL,0x00
     INT     0x13
     JMP     retry
-
 next:
     MOV     AX,ES           ; 内存地址后移0x0020
     ADD     AX,0x0020
     MOV     ES,AX
     ADD     CL,1
-    CMP     CL, 18          ; 只读到第18个扇区
+    CMP     CL,18           ; 只读到第18个扇区
     JBE     readloop
+    MOV     CL,1            
+    ADD     DH,1            ; 读取磁头号为1的柱面
+    JB      readloop
+    MOV     DH,0            ; 读取磁头号为0的柱面
+    ADD     CH,1            
+    CMP     CH,CYLS
+    JB      readloop
 
 fin:
     HLT						; 停止cpu 直到有事件发生
