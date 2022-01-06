@@ -31,8 +31,26 @@ entry:
     MOV		SS,AX
     MOV		SP,0x7c00
     MOV		DS,AX
-    MOV		ES,AX
 
+; 读盘
+    MOV     AX,0x0820
+    MOV		ES,AX
+    MOV     CH,0            ; 柱面0
+    MOV     DH,0            ; 磁头号
+    MOV     CL,2            ; 扇区号
+
+    MOV     AH,0x02         ; 读盘
+    MOV     AL,1            ; 处理对象的扇区数
+    MOV     BX,0            ; 缓冲地址
+    MOV     DL,0x00         ; 驱动器号
+    INT     0x13            ; 调用bios磁盘函数
+    JC      error
+
+fin:
+    HLT						; 停止cpu 直到有事件发生
+    JMP		fin	
+
+error:
     MOV		SI,msg
 
 putloop:
@@ -45,14 +63,10 @@ putloop:
     INT		0x10			; 视频 BIOS 调用
     JMP		putloop
 
-fin:
-    HLT						; 停止cpu 知道有事件发生
-    JMP		fin				
-
 ; 信息显示
 msg:
     DB		0x0a, 0x0a		; 2个换行
-    DB		"hello, world"
+    DB		"load error"
     DB		0x0a			; 换行
     DB		0
 
