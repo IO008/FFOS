@@ -24,4 +24,3 @@ len:
 	.int	. - msgstr
 	.org	0x1fe,	0x90
 	.word	0xaa55
-	
