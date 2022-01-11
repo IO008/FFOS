@@ -1,32 +1,44 @@
+TOOLPATH = ../tolset/z_tools/
+MAKE = $(TOOLPATH)make.exe
+NASK = $(TOOLPATH)nask.exe
+EDIMG = $(TOOLPATH)edimg.exe
+IMGTOL = $(TOOLPATH)imgtol.com
+COPY = copy
+DEL = del
+
 default :
-	../tolset/z_tools/make.exe img
+	$(MAKE) img
 
 ipl.bin : ipl.nas Makefile
-	../tolset/z_tools/nask.exe ipl.nas ipl.bin ipl.lst
+	$(NASK) ipl.nas ipl.bin ipl.lst
 
-ffos.img : ipl.bin Makefile
-	../tolset/z_tools/edimg.exe   imgin:../tolset/z_tools/fdimg0at.tek \
-		wbinimg src:ipl.bin len:512 from:0 to:0   imgout:ffos.img
+ffos.sys : ffos.nas Makefile
+	$(NASK) ffos.nas ffos.sys ffos.lst
 
-asm :
-	../tolset/z_tools/make.exe -r ipl.bin
+ffos.img : ipl.bin ffos.sys Makefile
+	$(EDIMG)	imgin:../tolset/z_tools/fdimg0at.tek \
+		wbinimg src:ipl.bin len:512 from:0 to:0  \
+		copy from:ffos.sys to:@: \
+		imgout:ffos.img
 
 img :
-	../tolset/z_tools/make.exe -r ffos.img
+	$(MAKE) ffos.img
 
 run :
-	../tolset/z_tools/make.exe img
-	copy ffos.img ..\tolset\z_tools\qemu\fdimage0.bin
-	../tolset/z_tools/make.exe -C ../tolset/z_tools/qemu
+	$(MAKE) img
+	$(COPY) ffos.img ..\tolset\z_tools\qemu\fdimage0.bin
+	$(MAKE) -C ../tolset/z_tools/qemu
 
 install :
-	../tolset/z_tools/make.exe img
-	../tolset/z_tools/imgtol.com w a: ffos.img
+	$(MAKE) img
+	$(IMGTOL) w a: ffos.img
 
 clean :
-	-del ipl.bin
-	-del ipl.lst
+	-$(DEL) ipl.bin
+	-$(DEL) ipl.lst
+	-$(DEL) ffos.sys
+	-$(DEL) ffos.lst
 
 src_only :
-	../tolset/z_tools/make.exe clean
-	-del ffos.img
+	$(MAKE) clean
+	-$(DEL) ffos.img

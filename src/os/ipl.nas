@@ -42,9 +42,9 @@ entry:
     MOV     CL,2            ; 扇区号
 readloop:
     MOV     SI,0            ; 记录读盘错误次数
-; 读盘
+
 retry:
-    MOV     AH,0x02         
+    MOV     AH,0x02         ; 读盘
     MOV     AL,1            ; 处理对象的扇区数
     MOV     BX,0            ; 缓冲地址
     MOV     DL,0x00         ; 驱动器号
@@ -66,11 +66,15 @@ next:
     JBE     readloop
     MOV     CL,1            
     ADD     DH,1            ; 读取磁头号为1的柱面
+    CMP     DH,2
     JB      readloop
     MOV     DH,0            ; 读取磁头号为0的柱面
     ADD     CH,1            
     CMP     CH,CYLS
     JB      readloop
+
+    MOV     [0x0ff0],CH
+    JMP     0xc200          ; 操作系统加载到内存地址
 
 fin:
     HLT						; 停止cpu 直到有事件发生
