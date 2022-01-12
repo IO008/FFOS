@@ -1,0 +1,7 @@
+*.lst
+*.bim
+*.gas
+*.hrb
+*.map
+*.obj
+*.bin
