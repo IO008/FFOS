@@ -1,4 +1,4 @@
-; ffos
+; ipl10
 ; TAB=4
 
 CYLS EQU 10         ; 柱面数量
