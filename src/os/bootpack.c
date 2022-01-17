@@ -24,17 +24,32 @@ void set_palette(int start, int end, unsigned char *rgb);
 #define COL8_008484		14
 #define COL8_848484		15
 
-void HariMain(void) {
-	int i;
+struct BOOTINFO {
+	char cyls, leds, vmode, reserve;
+	short scrnx, scrny;
 	char *vram;
-	int xsize, ysize; // 像素
+};
 
-	init_paletee();
-
-	vram = (char *)0xa0000; // vram地址  end 0xaffff;
-	xsize = 320;
-	ysize = 200;
+void HariMain(void) {
+	struct BOOTINFO *binfo = (struct BOOTINFO *)0x0ff0;
+	extern char hankaku[4096];	
 	
+	init_paletee();	
+
+	init_screen(binfo->vram, binfo->scrnx, binfo->scrny);
+	putfont8(binfo->vram, binfo->scrnx, 8, 8, COL8_FFFFFF, hankaku + 'A' * 16);
+	putfont8(binfo->vram, binfo->scrnx, 16, 8, COL8_FFFFFF, hankaku + 'B' * 16);
+	putfont8(binfo->vram, binfo->scrnx, 24, 8, COL8_FFFFFF, hankaku + 'C' * 16);
+	putfont8(binfo->vram, binfo->scrnx, 40, 8, COL8_FFFFFF, hankaku + '1' * 16);
+	putfont8(binfo->vram, binfo->scrnx, 48, 8, COL8_FFFFFF, hankaku + '2' * 16);
+	putfont8(binfo->vram, binfo->scrnx, 56, 8, COL8_FFFFFF, hankaku + '3' * 16);
+
+	for (;;) {
+		io_hlt();
+	}
+}
+
+void init_screen(char *vram, int xsize, int ysize) {
 	boxfill8(vram, xsize, COL8_008484, 0, 0, xsize - 1, ysize - 29);
 	boxfill8(vram, xsize, COL8_C6C6C6, 0, ysize - 28, xsize - 1, ysize - 28);
 	boxfill8(vram, xsize, COL8_FFFFFF, 0, ysize - 27, xsize - 1, ysize - 27);
@@ -51,10 +66,7 @@ void HariMain(void) {
 	boxfill8(vram, xsize, COL8_848484, xsize - 47, ysize - 23, xsize - 47, ysize - 4);
 	boxfill8(vram, xsize, COL8_FFFFFF, xsize - 47, ysize - 3, xsize - 4, ysize - 3);
 	boxfill8(vram, xsize, COL8_FFFFFF, xsize - 3, ysize - 24, xsize - 3, ysize - 3);
-	
-	for (;;) {
-		io_hlt();
-	}
+
 }
 
 void init_paletee() {
@@ -100,4 +112,21 @@ void boxfill8(unsigned char *vram, int xsize, unsigned char c, int x0, int y0, i
 		for (x = x0; x <= x1; x++)
 			vram[y * xsize + x] = c;
 	}
+}
+
+void putfont8(char *vram, int xsize, int x, int y, char c, char *font) {
+	int i;
+	char *p, d /* data */;
+	for (i = 0; i < 16; i++) {
+		p = vram + (y + i) * xsize + x;
+		d = font[i];
+		if ((d & 0x80) != 0) { p[0] = c; }
+		if ((d & 0x40) != 0) { p[1] = c; }
+		if ((d & 0x20) != 0) { p[2] = c; }
+		if ((d & 0x10) != 0) { p[3] = c; }
+		if ((d & 0x08) != 0) { p[4] = c; }
+		if ((d & 0x04) != 0) { p[5] = c; }
+		if ((d & 0x02) != 0) { p[6] = c; }
+		if ((d & 0x01) != 0) { p[7] = c; }
+	}	
 }
