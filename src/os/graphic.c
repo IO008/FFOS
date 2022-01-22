@@ -1,6 +1,6 @@
 #include "bootpack.h"
 
-void init_paletee() {
+void init_palette() {
 	static unsigned char table_rgb[16 * 3] = {
 		0x00, 0x00, 0x00,	/*  0:黒 */
 		0xff, 0x00, 0x00,	/*  1:亮红 */
@@ -44,7 +44,7 @@ void boxfill8(unsigned char *vram, int xsize, unsigned char c, int x0, int y0, i
 	}
 }
 
-void init_screen(char *vram, int xsize, int ysize) {
+void init_screen8(char *vram, int xsize, int ysize) {
 	boxfill8(vram, xsize, COL8_008484, 0, 0, xsize - 1, ysize - 29);
 	boxfill8(vram, xsize, COL8_C6C6C6, 0, ysize - 28, xsize - 1, ysize - 28);
 	boxfill8(vram, xsize, COL8_FFFFFF, 0, ysize - 27, xsize - 1, ysize - 27);
