@@ -1,6 +1,7 @@
 #include "bootpack.h"
 
-void init_pic(void) {
+void init_pic(void) 
+{
 	io_out8(PIC0_IMR, 0xff); /* 禁止所有中断 */
 	io_out8(PIC1_IMR, 0xff); /* 禁止所有中断 */
 
@@ -18,18 +19,26 @@ void init_pic(void) {
 	io_out8(PIC1_IMR, 0xff); /* 11111111 禁止所有中断 */
 }
 
+#define PORT_KEYDAT		0x0060
+
+struct KEYBUF keybuf;
+
 // 键盘中断
-void inthandler21(int *esp) {
-	struct BOOTINFO *binfo = (struct BOOTINFO *) ADR_BOOTINFO;
-	boxfill8(binfo->vram, binfo->scrnx, COL8_000000, 0, 0, 32 * 8 - 1, 15);
-	putfonts8_asc(binfo->vram, binfo->scrnx, 0, 0, COL8_FFFFFF, "INT 21 (IRQ-1) : PS/2 keyboard");
-	for (;;) {
-		io_hlt();
+void inthandler21(int *esp) 
+{
+
+	unsigned char data;
+	io_out8(PIC0_OCW2, 0x61);	/* 通知pic IRQ-01 受理完毕 */
+	data = io_in8(PORT_KEYDAT);
+	if (keybuf.next < 32) {
+		keybuf.data[keybuf.next] = data;
+		keybuf.next++;
 	}
 }
 
 // 鼠标中断
-void inthandler2c(int *esp) {
+void inthandler2c(int *esp) 
+{
 	struct BOOTINFO *binfo = (struct BOOTINFO *) ADR_BOOTINFO;
 	boxfill8(binfo->vram, binfo->scrnx, COL8_000000, 0, 0, 32 * 8 - 1, 15);
 	putfonts8_asc(binfo->vram, binfo->scrnx, 0, 0, COL8_FFFFFF, "INT 2C (IRQ-12) : PS/2 mouse");
