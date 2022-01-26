@@ -19,32 +19,6 @@ void init_pic(void)
 	io_out8(PIC1_IMR, 0xff); /* 11111111 禁止所有中断 */
 }
 
-#define PORT_KEYDAT		0x0060
-
-struct FIFO8 keyfifo;
-
-// 键盘中断
-void inthandler21(int *esp) 
-{
-
-	unsigned char data;
-	io_out8(PIC0_OCW2, 0x61);	/* 通知pic IRQ-01 受理完毕 */
-	data = io_in8(PORT_KEYDAT);
-	fifo8_put(&keyfifo, data);
-}
-
-struct FIFO8 mousefifo;
-
-// 鼠标中断
-void inthandler2c(int *esp) 
-{
-	unsigned char data;
-	io_out8(PIC1_OCW2, 0x64);	/* 通知从PIC1 IRQ-12的受理已经完成*/
-	io_out8(PIC0_OCW2, 0x62);	/* 通知主PIC0 IRQ-02的受理已经完成 */
-	data = io_in8(PORT_KEYDAT);
-	fifo8_put(&mousefifo, data);
-	return;
-}
 
 /*针对来自PIC0的不完全中断的对策*/
 /* 在 Athlon 64 X2 机器上，这个中断只在 PIC 初始化时发生一次，因为芯片组。 */

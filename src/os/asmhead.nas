@@ -49,7 +49,7 @@ VRAM	EQU		0x0ff8		; 图像缓冲区开始地址
 
 ; 保护模式转换
 
-[INSTRSET "i486p"]				; 486您要使用的描述
+[INSTRSET "i486p"]				; 想要使用486指令的描述
 
 		LGDT	[GDTR0]			; 设置临时 GDT
 		MOV		EAX,CR0
@@ -72,7 +72,7 @@ pipelineflush:
 		MOV		ECX,512*1024/4
 		CALL	memcpy
 
-; 顺便说一下，磁盘数据也被转移到了原来的位置。
+; 磁盘数据最终转送到它本来的位置去
 
 ; 首先从引导扇区
 
