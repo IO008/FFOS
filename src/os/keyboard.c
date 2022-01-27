@@ -1,15 +1,17 @@
+/* 键盘相关 */
+
 #include "bootpack.h"
 
 struct FIFO8 keyfifo;
 
 // 键盘中断
-void inthandler21(int *esp) 
+void inthandler21(int *esp)
 {
-
 	unsigned char data;
 	io_out8(PIC0_OCW2, 0x61);	/* 通知pic IRQ-01 受理完毕 */
 	data = io_in8(PORT_KEYDAT);
 	fifo8_put(&keyfifo, data);
+	return;
 }
 
 #define PORT_KEYSTA				0x0064
@@ -19,12 +21,13 @@ void inthandler21(int *esp)
 
 void wait_KBC_sendready(void)
 {
-	/*等待键盘控制电路准备完毕*/
+	/* 等待键盘控制电路准备完毕 */
 	for (;;) {
 		if ((io_in8(PORT_KEYSTA) & KEYSTA_SEND_NOTREADY) == 0) {
 			break;
 		}
 	}
+	return;
 }
 
 void init_keyboard(void)

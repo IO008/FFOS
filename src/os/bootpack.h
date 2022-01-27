@@ -1,7 +1,7 @@
 /* asmhead.nas */
 struct BOOTINFO { /* 0x0ff0-0x0fff */
 	char cyls; /* 引导扇区读取光盘的距离有多远？*/
-	char leds; /* 启动时键盘 LED 状态  */
+	char leds; /* 启动时键盘 LED 状态 */
 	char vmode; /* 视频模式 多少位颜色 */
 	char reserve;
 	short scrnx, scrny; /* 画面解析度 */
@@ -13,11 +13,15 @@ struct BOOTINFO { /* 0x0ff0-0x0fff */
 void io_hlt(void);
 void io_cli(void);
 void io_sti(void);
+void io_stihlt(void);
+int io_in8(int port);
 void io_out8(int port, int data);
 int io_load_eflags(void);
 void io_store_eflags(int eflags);
 void load_gdtr(int limit, int addr);
 void load_idtr(int limit, int addr);
+int load_cr0(void);
+void store_cr0(int cr0);
 void asm_inthandler21(void);
 void asm_inthandler27(void);
 void asm_inthandler2c(void);
@@ -100,9 +104,9 @@ void inthandler27(int *esp);
 #define PIC1_ICW4		0x00a1
 
 /* keyboard.c */
-void init_keyboard(void);
-void wait_KBC_sendready(void);
 void inthandler21(int *esp);
+void wait_KBC_sendready(void);
+void init_keyboard(void);
 extern struct FIFO8 keyfifo;
 #define PORT_KEYDAT		0x0060
 #define PORT_KEYCMD		0x0064
@@ -115,5 +119,4 @@ struct MOUSE_DEC {
 void inthandler2c(int *esp);
 void enable_mouse(struct MOUSE_DEC *mdec);
 int mouse_decode(struct MOUSE_DEC *mdec, unsigned char dat);
-
 extern struct FIFO8 mousefifo;

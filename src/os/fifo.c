@@ -1,3 +1,5 @@
+/* FIFOライブラリ */
+
 #include "bootpack.h"
 
 #define FLAGS_OVERRUN		0x0001
@@ -18,7 +20,7 @@ int fifo8_put(struct FIFO8 *fifo, unsigned char data)
 /* 向FIFO传送数据并保存 */
 {
 	if (fifo->free == 0) {
-		/* 空余没有了，溢出*/
+		/* 空余没有了，溢出 */
 		fifo->flags |= FLAGS_OVERRUN;
 		return -1;
 	}
@@ -32,11 +34,11 @@ int fifo8_put(struct FIFO8 *fifo, unsigned char data)
 }
 
 int fifo8_get(struct FIFO8 *fifo)
-/* 从FIFO取得一个数据*/
+/* 从FIFO取得一个数据 */
 {
 	int data;
 	if (fifo->free == fifo->size) {
-		/* 如果缓冲区为空，则返回 -1  */
+		/* 如果缓冲区为空，则返回 -1 */
 		return -1;
 	}
 	data = fifo->buf[fifo->q];
@@ -49,7 +51,7 @@ int fifo8_get(struct FIFO8 *fifo)
 }
 
 int fifo8_status(struct FIFO8 *fifo)
-/* 报告 一下 到底 积攒 了 多少 数据 */
+/* 报告一下到底积攒了多少数据 */
 {
 	return fifo->size - fifo->free;
 }

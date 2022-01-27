@@ -1,5 +1,9 @@
+
 #include "bootpack.h"
 #include <stdio.h>
+
+unsigned int memtest(unsigned int start, unsigned int end);
+unsigned int memtest_sub(unsigned int start, unsigned int end);
 
 void HariMain(void)
 {
@@ -10,8 +14,7 @@ void HariMain(void)
 
 	init_gdtidt();
 	init_pic();
-	io_sti(); /*由于IDT/PIC的初始化完成，CPU中断禁止被取消。  */
-
+	io_sti(); /* 由于IDT/PIC的初始化完成，CPU中断禁止被取消。 */
 	fifo8_init(&keyfifo, 32, keybuf);
 	fifo8_init(&mousefifo, 128, mousebuf);
 	io_out8(PIC0_IMR, 0xf9); /* 允许 PIC1 和键盘 (11111001) */
@@ -26,7 +29,7 @@ void HariMain(void)
 	my = (binfo->scrny - 28 - 16) / 2;
 	init_mouse_cursor8(mcursor, COL8_008484);
 	putblock8_8(binfo->vram, binfo->scrnx, 16, 16, mx, my, mcursor, 16);
-	sprintf(s, "(%d, %d)", mx, my);
+	sprintf(s, "(%3d, %3d)", mx, my);
 	putfonts8_asc(binfo->vram, binfo->scrnx, 0, 0, COL8_FFFFFF, s);
 
 	i = memtest(0x00400000, 0xbfffffff) / (1024 * 1024);
@@ -42,13 +45,13 @@ void HariMain(void)
 				i = fifo8_get(&keyfifo);
 				io_sti();
 				sprintf(s, "%02X", i);
-				boxfill8(binfo->vram, binfo->scrnx, COL8_008484, 0, 16, 15, 31);
+				boxfill8(binfo->vram, binfo->scrnx, COL8_008484,  0, 16, 15, 31);
 				putfonts8_asc(binfo->vram, binfo->scrnx, 0, 16, COL8_FFFFFF, s);
 			} else if (fifo8_status(&mousefifo) != 0) {
 				i = fifo8_get(&mousefifo);
 				io_sti();
 				if (mouse_decode(&mdec, i) != 0) {
-					/* 鼠标的3个字节都齐了显示出来 */
+					/* 鼠标的3个字节都齐了显示出来*/
 					sprintf(s, "[lcr %4d %4d]", mdec.x, mdec.y);
 					if ((mdec.btn & 0x01) != 0) {
 						s[1] = 'L';
@@ -61,9 +64,8 @@ void HariMain(void)
 					}
 					boxfill8(binfo->vram, binfo->scrnx, COL8_008484, 32, 16, 32 + 15 * 8 - 1, 31);
 					putfonts8_asc(binfo->vram, binfo->scrnx, 32, 16, COL8_FFFFFF, s);
-					
 					/* 鼠标指针的移动 */
-					boxfill8(binfo->vram, binfo->scrnx, COL8_008484, mx, my, mx + 15, my + 15);
+					boxfill8(binfo->vram, binfo->scrnx, COL8_008484, mx, my, mx + 15, my + 15); /* マウス消す */
 					mx += mdec.x;
 					my += mdec.y;
 					if (mx < 0) {
@@ -83,12 +85,10 @@ void HariMain(void)
 					putfonts8_asc(binfo->vram, binfo->scrnx, 0, 0, COL8_FFFFFF, s); /* 显示坐标 */
 					putblock8_8(binfo->vram, binfo->scrnx, 16, 16, mx, my, mcursor, 16); /* 绘制鼠标 */
 				}
-					
 			}
-
 		}
 	}
-} 
+}
 
 #define EFLAGS_AC_BIT		0x00040000
 #define CR0_CACHE_DISABLE	0x60000000
@@ -111,7 +111,7 @@ unsigned int memtest(unsigned int start, unsigned int end)
 
 	if (flg486 != 0) {
 		cr0 = load_cr0();
-		cr0 |= CR0_CACHE_DISABLE; /* 禁止缓存*/
+		cr0 |= CR0_CACHE_DISABLE; /* 禁止缓存 */
 		store_cr0(cr0);
 	}
 
@@ -119,7 +119,7 @@ unsigned int memtest(unsigned int start, unsigned int end)
 
 	if (flg486 != 0) {
 		cr0 = load_cr0();
-		cr0 &= ~CR0_CACHE_DISABLE; /* 允许缓存*/
+		cr0 &= ~CR0_CACHE_DISABLE; /* 允许缓存 */
 		store_cr0(cr0);
 	}
 
@@ -131,19 +131,19 @@ unsigned int memtest_sub(unsigned int start, unsigned int end)
 	unsigned int i, *p, old, pat0 = 0xaa55aa55, pat1 = 0x55aa55aa;
 	for (i = start; i <= end; i += 0x1000) {
 		p = (unsigned int *) (i + 0xffc);
-		old = *p;			/* 先记住修改前的值*/
-		*p = pat0;			/* 试写*/
+		old = *p;			/* 先记住修改前的值 */
+		*p = pat0;			/* 试写 */
 		*p ^= 0xffffffff;	/* 反转 */
-		if (*p != pat1) {	/* 检查反转结果*/
+		if (*p != pat1) {	/* 检查反转结果 */
 not_memory:
 			*p = old;
 			break;
 		}
-		*p ^= 0xffffffff;	/* 再次反转*/
+		*p ^= 0xffffffff;	/* 再次反转 */
 		if (*p != pat0) {	/* 检查值是否恢复 */
 			goto not_memory;
 		}
-		*p = old;			/* 恢复为修改前的值*/
+		*p = old;			/* 恢复为修改前的值 */
 	}
 	return i;
 }
