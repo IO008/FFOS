@@ -5,3 +5,5 @@
 *.map
 *.obj
 *.bin
+*.img
+*.sys
